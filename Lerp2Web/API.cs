@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Configuration;
-using System.Globalization;
 using System.IO;
 using System.Reflection;
-using System.Resources;
 
 namespace Lerp2Web
 {
@@ -13,7 +11,6 @@ namespace Lerp2Web
     {
         internal static Action _loadConfigCallback;
 
-        public static LanguageManager lang;
         public static Configuration config;
 
         public const string _InitConfig = "InitializatedConfig",
@@ -65,48 +62,4 @@ namespace Lerp2Web
     }
 
     #endregion "API: Languages & Config"
-
-    #region "Languages"
-
-    //Esto va para la API (LiteLerped-WF-API)
-
-    public enum LerpedLanguage { ES, EN }
-
-    public class LanguageManager
-    {
-        public CultureInfo culture;
-
-        private ResourceManager _rMan;
-        private string baseName;
-
-        public Action<LerpedLanguage> Switch;
-
-        public ResourceManager ResMan
-        {
-            get
-            {
-                if (_rMan == null)
-                    _rMan = new ResourceManager(baseName, Assembly.GetExecutingAssembly());
-                return _rMan;
-            }
-        }
-
-        public LanguageManager(string baseName, Action<LerpedLanguage> act)
-        {
-            this.baseName = baseName;
-
-            Switch = (lang) =>
-            {
-                culture = CultureInfo.CreateSpecificCulture(lang.ToString().ToLower());
-                act(lang);
-            };
-        }
-
-        public string GetString(string str)
-        {
-            return ResMan.GetString(str, culture);
-        }
-    }
-
-    #endregion "Languages"
 }
