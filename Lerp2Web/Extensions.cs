@@ -7,9 +7,9 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 
 namespace Lerp2Web
@@ -180,6 +180,54 @@ namespace Lerp2Web
         public static JProperty GetErrors(this JObject obj)
         {
             return obj != null ? obj.Property("error") : default(JProperty);
+        }
+    }
+
+    public static class ArrayExtensions
+    {
+        public static void Append<T>(ref T[] array, T append)
+        {
+            if (array == null) array = new T[0];
+            Array.Resize(ref array, array.Length + 1);
+            array[array.Length - 1] = append;    // < Adds an extra element to my array
+        }
+    }
+
+    public static class UriExtensions
+    {
+        public static bool ValidUrl(this string Url)
+        {
+            Uri uriResult;
+            return Uri.TryCreate(Url, UriKind.Absolute, out uriResult)
+                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+        }
+    }
+
+    public static class WebExtensions
+    {
+        public static string DownloadString(string add)
+        { //DownloadString for https
+            try
+            {
+                using (var client = new WebClient())
+                {
+                    try
+                    {
+                        client.Headers.Add("user-agent", "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.2.15) Gecko/20110303 Firefox/3.6.15");
+                        return client.DownloadString(add);
+                    }
+                    catch
+                    {
+                        Console.WriteLine("File not found!");
+                        return "";
+                    }
+                }
+            }
+            catch
+            {
+                Console.WriteLine("No internet connection!");
+                return "";
+            }
         }
     }
 }

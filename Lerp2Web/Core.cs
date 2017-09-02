@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -47,7 +48,44 @@ namespace Lerp2Web
         private static DateTime StartTime;
 
         internal const bool outputWebRequests = true;
-        public const string APIServer = "http://localhost/lerp2php";
+
+        private static string _apiServerUrl;
+
+        public static string APIServer //= "http://localhost/lerp2php"
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(_apiServerUrl))
+                    return _apiServerUrl;
+                string localhost = "localhost/lerp2php/",
+                       lerp2dev = "lerp2dev.com/misc/Lerp2PHP/",
+                       concatUrl = "http://{0}/Check.php",
+                       localhostUrl = string.Format(concatUrl, localhost);
+                try
+                {
+                    var request = WebRequest.Create(localhostUrl);
+                    using (var response = request.GetResponse())
+                    {
+                        using (var responseStream = response.GetResponseStream())
+                        {
+                            // Process the stream
+                            using (StreamReader reader = new StreamReader(responseStream, Encoding.UTF8))
+                            {
+                                if (reader.ReadToEnd() == "OK")
+                                    _apiServerUrl = localhost;
+                                else
+                                    _apiServerUrl = lerp2dev;
+                            }
+                        }
+                    }
+                }
+                catch (WebException ex)
+                {
+                    _apiServerUrl = localhost;
+                }
+                return _apiServerUrl;
+            }
+        }
 
         public const int MIN_USERNAME_LENGTH = 4,
                          MAX_USERNAME_LENGTH = 16,
