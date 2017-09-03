@@ -1,3 +1,2 @@
 D:\LERP2DEV\Lerp2Dev Visual Studio\Lerp2Web\Lerp2Web\obj\Release\Lerp2Web.dll
 D:\LERP2DEV\Lerp2Dev Visual Studio\Lerp2Web\Lerp2Web\obj\Release\Lerp2Web.pdb
-D:\LERP2DEV\Lerp2Dev Visual Studio\Lerp2Web\Lerp2Web\obj\Release\Lerp2Web.csprojResolveAssemblyReference.cache

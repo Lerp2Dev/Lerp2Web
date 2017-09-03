@@ -57,13 +57,14 @@ namespace Lerp2Web
             {
                 if (!string.IsNullOrEmpty(_apiServerUrl))
                     return _apiServerUrl;
-                string localhost = "localhost/lerp2php/",
-                       lerp2dev = "lerp2dev.com/misc/Lerp2PHP/",
-                       concatUrl = "http://{0}/Check.php",
-                       localhostUrl = string.Format(concatUrl, localhost);
+                string localhost = "localhost/lerp2php",
+                       lerp2dev = "lerp2dev.com/misc/Lerp2PHP",
+                       concatUrl = "http://{0}",
+                       localhostUrl = string.Format(concatUrl, localhost),
+                       concatCheck = string.Concat(localhostUrl, "Check.php");
                 try
                 {
-                    var request = WebRequest.Create(localhostUrl);
+                    var request = WebRequest.Create(concatCheck);
                     using (var response = request.GetResponse())
                     {
                         using (var responseStream = response.GetResponseStream())
@@ -72,7 +73,7 @@ namespace Lerp2Web
                             using (StreamReader reader = new StreamReader(responseStream, Encoding.UTF8))
                             {
                                 if (reader.ReadToEnd() == "OK")
-                                    _apiServerUrl = localhost;
+                                    _apiServerUrl = localhostUrl;
                                 else
                                     _apiServerUrl = lerp2dev;
                             }
@@ -81,7 +82,8 @@ namespace Lerp2Web
                 }
                 catch (WebException ex)
                 {
-                    _apiServerUrl = localhost;
+                    Console.WriteLine("Something unexpected ocurred when tried to get APIServer url. Message:\n\n{0}", ex.ToString());
+                    _apiServerUrl = localhostUrl;
                 }
                 return _apiServerUrl;
             }
@@ -185,6 +187,9 @@ namespace Lerp2Web
 
         public Lerp2Web(string appPrefix)
         {
+            //Singleton
+            instance = this;
+
             StartTime = DateTime.Now;
             this.appPrefix = appPrefix;
 
@@ -198,7 +203,6 @@ namespace Lerp2Web
 
             //And load everything...
             Load();
-            instance = this;
         }
 
         internal void Load()
@@ -208,74 +212,76 @@ namespace Lerp2Web
                 Console.WriteLine("Couldn't create a new entity!");
         }
 
-        public JObject JGet(NameValueCollection col, bool thrExc = false)
+        public static JObject JGet(NameValueCollection col, string url = "", bool hideRes = false, bool thrExc = false)
         {
-            JObject res = JsonConvert.DeserializeObject<JObject>(Get(col, thrExc));
+            JObject res = JsonConvert.DeserializeObject<JObject>(Get(col, url, hideRes, thrExc));
             RequestMade(col, res);
             return res;
         }
 
-        public T JGet<T>(NameValueCollection col, bool thrExc = false) where T : JObject
+        public static T JGet<T>(NameValueCollection col, string url = "", bool hideRes = false, bool thrExc = false) where T : JObject
         {
-            T res = JsonConvert.DeserializeObject<T>(Get(col, thrExc));
+            T res = JsonConvert.DeserializeObject<T>(Get(col, url, hideRes, thrExc));
             RequestMade(col, res);
             return res;
         }
 
-        public string Get(NameValueCollection col, bool thrExc = false)
+        public static string Get(NameValueCollection col, string url = "", bool hideRes = false, bool thrExc = false)
         {
             Lerp2WebDebug lerpedDebug = new Lerp2WebDebug(PHPRequestMethod.GET, col);
+            string _u = string.IsNullOrEmpty(url) ? string.Format("{0}/AppAjax.php", APIServer) : url;
             try
             {
                 using (WebClient client = new WebClient())
                 {
-                    client.QueryString = col;
-                    string res = client.DownloadString(string.Format("{0}/AppAjax.php", APIServer));
-                    lerpedDebug.DebugResponse(res);
+                    if (col != null) client.QueryString = col;
+                    string res = client.DownloadString(_u);
+                    lerpedDebug.DebugResponse(hideRes ? "HideRes is true" : res, _u);
                     return res;
                 }
             }
             catch (Exception ex)
             {
-                OfflineMode = true;
-                lerpedDebug.DebugException(ex);
+                instance.OfflineMode = true;
+                lerpedDebug.DebugException(_u, ex);
                 if (thrExc)
                     throw new Exception(ex.ToString());
                 return "";
             }
         }
 
-        public JObject JPost(NameValueCollection col, bool thrExc = false)
+        public static JObject JPost(NameValueCollection col, string url = "", bool hideRes = false, bool thrExc = false)
         {
-            JObject res = JsonConvert.DeserializeObject<JObject>(Post(col, thrExc));
+            JObject res = JsonConvert.DeserializeObject<JObject>(Post(col, url, hideRes, thrExc));
             RequestMade(col, res);
             return res;
         }
 
-        public T JPost<T>(NameValueCollection col, bool thrExc = false) where T : JObject
+        public static T JPost<T>(NameValueCollection col, string url = "", bool hideRes = false, bool thrExc = false) where T : JObject
         {
-            T res = JsonConvert.DeserializeObject<T>(Post(col, thrExc));
+            T res = JsonConvert.DeserializeObject<T>(Post(col, url, hideRes, thrExc));
             RequestMade(col, res);
             return res;
         }
 
-        public string Post(NameValueCollection col, bool thrExc = false)
+        public static string Post(NameValueCollection col, string url = "", bool hideRes = false, bool thrExc = false)
         {
             Lerp2WebDebug lerpedDebug = new Lerp2WebDebug(PHPRequestMethod.POST, col);
+            string _u = string.IsNullOrEmpty(url) ? string.Format("{0}/AppAjax.php", APIServer) : url;
             try
             {
                 using (WebClient client = new WebClient())
                 {
-                    byte[] val = client.UploadValues(string.Format("{0}/AppAjax.php", APIServer), col);
+                    byte[] val = client.UploadValues(_u, col);
                     string res = Encoding.Default.GetString(val);
-                    lerpedDebug.DebugResponse(res);
+                    lerpedDebug.DebugResponse(hideRes ? "HideRes is true" : res, _u);
                     return res;
                 }
             }
             catch (Exception ex)
             {
-                OfflineMode = true;
-                lerpedDebug.DebugException(ex);
+                instance.OfflineMode = true;
+                lerpedDebug.DebugException(_u, ex);
                 if (thrExc)
                     throw new Exception(ex.ToString());
                 return "";
@@ -460,29 +466,30 @@ namespace Lerp2Web
         public Lerp2WebDebug(PHPRequestMethod method, NameValueCollection col, bool trace = false)
         {
             Method = method;
-            Query = col.BuildQueryString();
+            Query = col != null ? col.BuildQueryString() : "NULL QueryString passed";
             Backtrace = trace;
         }
 
-        public void DebugResponse(string res)
+        public void DebugResponse(string res, string url)
         {
-            Debug(res);
+            Debug(res, url);
         }
 
-        public void DebugException(Exception ex)
+        public void DebugException(string url, Exception ex)
         {
-            Debug("", ex);
+            Debug("", url, ex);
         }
 
-        private void Debug(string res, Exception ex = null)
+        private void Debug(string res, string url, Exception ex = null)
         {
             if (!Lerp2Web.outputWebRequests) return;
             Console.WriteLine(string.Format(
-                "\n------------\n\n[{0}] Request made at {1} has returned the following:\n\n{2}\n\nQuery string: {3}{4}{5}\n\n------------\n",
+                "\n------------\n\n[{0}] Request made at {1} has returned the following:\n\n{2}\n\nQuery string: {3}\n\nUrl: {4}{5}{6}\n\n------------\n",
                 Method,
                 DateTime.Now.ToSQLDateTime(),
                 !string.IsNullOrEmpty(res) ? res.JsonPrettify() : "",
                 Query,
+                url,
                 ex != null ? string.Format("\n\nException:\n\n{0}", ex.ToString()) : "",
                 Backtrace ? string.Format("\n\nTrace:\n\n{0}", new StackTrace().ToString()) : ""));
         }
@@ -576,7 +583,7 @@ namespace Lerp2Web
                     {
                         if (off.StartDate == null && off.EndDate != null)
                         { //Este es para el caso de que empiezes con internet y te quedes sin internet
-                            Lerp2Web.instance.Post(new EActionRequest("endStartedSession")
+                            Lerp2Web.Post(new EActionRequest("endStartedSession")
                             {
                                 { "sha", off.Sha },
                                 { "end_time", off.EndDate.ToSQLDateTime() }
@@ -584,7 +591,7 @@ namespace Lerp2Web
                         }
                         else if (off.StartDate != null && off.EndDate != null)
                         { //Este es para el caso de una sesion que nunca ha tenido internet
-                            Lerp2Web.instance.Post(new EActionRequest("recordNewSession")
+                            Lerp2Web.Post(new EActionRequest("recordNewSession")
                             {
                                 { "sha", off.Sha },
                                 { "app_id", Lerp2Web.instance.strId },
