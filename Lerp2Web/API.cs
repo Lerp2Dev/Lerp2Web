@@ -13,40 +13,42 @@ namespace Lerp2Web
 
         public static Configuration config;
 
-        public const string _InitConfig = "InitializatedConfig",
-                            usernameConfig = "loginUsername",
-                            passwordConfig = "loginPassword",
-                            sessionTimeConfig = "endSessionConfig";
-
         public static bool RememberingAuth
         {
             get
             {
-                return config != null && !config.AppSettings.Settings.IsEmpty(usernameConfig) || !config.AppSettings.Settings.IsEmpty(passwordConfig);
+                return config != null && !ConfigCore.Settings.IsEmpty(ConfigKeys.usernameConfig) || !ConfigCore.Settings.IsEmpty(ConfigKeys.passwordConfig);
             }
         }
 
+        public static bool InitializatedConfigSession { private set; get; }
+
         private static void InitConfig(Configuration config)
         {
-            config.AppSettings.Settings.Add(_InitConfig, "true");
-            config.AppSettings.Settings.Add(usernameConfig, "");
-            config.AppSettings.Settings.Add(passwordConfig, "");
-            config.AppSettings.Settings.Add(sessionTimeConfig, "");
+            ConfigCore.CreateSettingEntry(ConfigKeys._InitConfig, "true");
+            ConfigCore.CreateSettingEntry(ConfigKeys.usernameConfig, "");
+            ConfigCore.CreateSettingEntry(ConfigKeys.passwordConfig, "");
+            ConfigCore.CreateSettingEntry(ConfigKeys.sessionTimeConfig, "");
+            ConfigCore.CreateSettingEntry(ConfigKeys.currentLanguage, "en");
         }
 
-        public static void LoadConfig()
+        public static void LoadConfig(Action firstExecution)
         {
             //Load config
             ExeConfigurationFileMap configFileMap = new ExeConfigurationFileMap();
             configFileMap.ExeConfigFilename = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "App.config");
             config = ConfigurationManager.OpenMappedExeConfiguration(configFileMap, ConfigurationUserLevel.None);
 
-            if (config.AppSettings.Settings.IsEmpty(_InitConfig))
+            InitializatedConfigSession = ConfigCore.Settings.IsEmpty(ConfigKeys._InitConfig);
+            if (InitializatedConfigSession)
+            {
                 InitConfig(config);
+                firstExecution?.Invoke();
+            }
 
             //Load things that needs config
             //Load for example offline sessions
-            string val = !config.AppSettings.Settings.IsEmpty(sessionTimeConfig) ? config.AppSettings.Settings[sessionTimeConfig].Value : "";
+            string val = !ConfigCore.Settings.IsEmpty(ConfigKeys.sessionTimeConfig) ? ConfigCore.Settings[ConfigKeys.sessionTimeConfig].Value : "";
             if (!string.IsNullOrEmpty(val))
                 OfflineSession.Load(val);
 
@@ -58,6 +60,116 @@ namespace Lerp2Web
         {
             Console.WriteLine("Setting callback!!");
             _loadConfigCallback = call;
+        }
+    }
+
+    public class ConfigCore : API
+    {
+        public static SettingsManager Settings
+        {
+            get
+            {
+                //Console.WriteLine("AppSettings is null?: {0}", config.AppSettings == null);
+                return config.AppSettings.Settings.ToManagedSettings();
+            }
+        }
+
+        internal static KeyValueConfigurationCollection Setts
+        {
+            get
+            {
+                return config.AppSettings.Settings;
+            }
+        }
+
+        public static void CreateSettingEntry(string key, string value)
+        {
+            try
+            {
+                Setts.Add(key, value);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error ocurred trying to add value to Config. Message: {0}", ex.ToString());
+            }
+        }
+    }
+
+    public class ConfigKeys
+    {
+        public static string _InitConfig
+        {
+            get
+            {
+                return "InitializatedConfig";
+            }
+        }
+
+        public static string usernameConfig
+        {
+            get
+            {
+                return "loginUsername";
+            }
+        }
+
+        public static string passwordConfig
+        {
+            get
+            {
+                return "loginPassword";
+            }
+        }
+
+        public static string sessionTimeConfig
+        {
+            get
+            {
+                return "endSessionConfig";
+            }
+        }
+
+        public static string currentLanguage
+        {
+            get
+            {
+                return "currentLanguage";
+            }
+        }
+    }
+
+    public class SettingsManager : KeyValueConfigurationCollection
+    {
+        private KeyValueConfigurationCollection _c;
+
+        internal KeyValueConfigurationCollection col
+        {
+            get
+            {
+                return ConfigCore.Setts;
+            }
+            set
+            {
+                _c = value;
+            }
+        }
+
+        public KeyValueConfigurationElement this[string key]
+        {
+            get
+            {
+                if (col[key] == null)
+                    ConfigCore.CreateSettingEntry(key, "");
+                return col[key];
+            }
+        }
+    }
+
+    public static class SettingsManagerExtensions
+    {
+        public static SettingsManager ToManagedSettings(this KeyValueConfigurationCollection c)
+        {
+            return new SettingsManager() { col = c };
         }
     }
 

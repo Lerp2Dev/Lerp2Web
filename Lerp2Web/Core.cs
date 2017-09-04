@@ -348,7 +348,7 @@ namespace Lerp2Web
                         OfflineSession.AddUnstartedSession(GetNewSessionSha());
                     else //Si hay Sha, entonces añadimos la session con la Sha que teniamos guardada...
                         OfflineSession.AddSession(sessionSha, StartTime);
-                    API.config.AppSettings.Settings[API.sessionTimeConfig].Value = OfflineSession.ToString();
+                    ConfigCore.Settings[ConfigKeys.sessionTimeConfig].Value = OfflineSession.ToString();
                 }
                 catch
                 {
