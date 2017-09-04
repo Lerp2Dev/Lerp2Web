@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Lerp2Web.Properties;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
@@ -348,7 +349,7 @@ namespace Lerp2Web
                         OfflineSession.AddUnstartedSession(GetNewSessionSha());
                     else //Si hay Sha, entonces añadimos la session con la Sha que teniamos guardada...
                         OfflineSession.AddSession(sessionSha, StartTime);
-                    ConfigCore.Settings[ConfigKeys.sessionTimeConfig].Value = OfflineSession.ToString();
+                    Settings.Default.EndSessionConfig = OfflineSession.ToString();
                 }
                 catch
                 {

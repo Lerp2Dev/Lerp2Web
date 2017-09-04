@@ -1,3 +1,11 @@
 D:\LERP2DEV\Lerp2Dev Visual Studio\Lerp2Web\Lerp2Web\obj\Release\Lerp2Web.dll
 D:\LERP2DEV\Lerp2Dev Visual Studio\Lerp2Web\Lerp2Web\obj\Release\Lerp2Web.pdb
+D:\LERP2DEV\Lerp2Dev Visual Studio\Lerp2Web\Lerp2Web\bin\Release\Lerp2Web.dll
+D:\LERP2DEV\Lerp2Dev Visual Studio\Lerp2Web\Lerp2Web\bin\Release\Lerp2Web.pdb
+D:\LERP2DEV\Lerp2Dev Visual Studio\Lerp2Web\Lerp2Web\bin\Release\HtmlAgilityPack.dll
+D:\LERP2DEV\Lerp2Dev Visual Studio\Lerp2Web\Lerp2Web\bin\Release\Newtonsoft.Json.dll
+D:\LERP2DEV\Lerp2Dev Visual Studio\Lerp2Web\Lerp2Web\bin\Release\HtmlAgilityPack.pdb
+D:\LERP2DEV\Lerp2Dev Visual Studio\Lerp2Web\Lerp2Web\bin\Release\HtmlAgilityPack.xml
+D:\LERP2DEV\Lerp2Dev Visual Studio\Lerp2Web\Lerp2Web\bin\Release\Newtonsoft.Json.xml
 D:\LERP2DEV\Lerp2Dev Visual Studio\Lerp2Web\Lerp2Web\obj\Release\Lerp2Web.csprojResolveAssemblyReference.cache
+D:\LERP2DEV\Lerp2Dev Visual Studio\Lerp2Web\Lerp2Web\bin\Release\Lerp2Web.dll.config
