@@ -230,4 +230,37 @@ namespace Lerp2Web
             }
         }
     }
+
+    public static class IOExtensions
+    {
+        public static void Empty(this DirectoryInfo directory)
+        {
+            foreach (FileInfo file in directory.GetFiles()) file.Delete();
+            foreach (DirectoryInfo subDirectory in directory.GetDirectories()) subDirectory.Delete(true);
+        }
+    }
+
+    public static class StringExtensions
+    {
+        public static string BytesToString(this int byteCount)
+        {
+            return ((double) byteCount).BytesToString();
+        }
+
+        public static string BytesToString(this long byteCount)
+        {
+            return ((double) byteCount).BytesToString();
+        }
+
+        public static string BytesToString(this double byteCount)
+        {
+            string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
+            if (byteCount == 0)
+                return "0" + suf[0];
+            double bytes = Math.Abs(byteCount);
+            int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+            double num = Math.Round(bytes / Math.Pow(1024, place), 1);
+            return (Math.Sign(byteCount) * num).ToString() + suf[place];
+        }
+    }
 }
