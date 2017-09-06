@@ -201,6 +201,11 @@ namespace Lerp2Web
             return Uri.TryCreate(Url, UriKind.Absolute, out uriResult)
                 && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
         }
+
+        public static Uri GetBuildedUri(this string Url, NameValueCollection Col)
+        {
+            return new Uri(string.Concat(Url, "?", Col.BuildQueryString()));
+        }
     }
 
     public static class WebExtensions
@@ -254,13 +259,22 @@ namespace Lerp2Web
 
         public static string BytesToString(this double byteCount)
         {
-            string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
-            if (byteCount == 0)
-                return "0" + suf[0];
-            double bytes = Math.Abs(byteCount);
-            int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
-            double num = Math.Round(bytes / Math.Pow(1024, place), 1);
-            return (Math.Sign(byteCount) * num).ToString() + suf[place];
+            try
+            {
+                string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
+                if (byteCount == 0)
+                    return "0" + suf[0];
+                double bytes = Math.Abs(byteCount);
+                int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+                double num = Math.Round(bytes / Math.Pow(1024, place), 1);
+                return (Math.Sign(byteCount) * num).ToString() + suf[place];
+            }
+            catch
+            {
+                if (double.IsInfinity(byteCount))
+                    return "Inf";
+                return "0";
+            }
         }
     }
 }
