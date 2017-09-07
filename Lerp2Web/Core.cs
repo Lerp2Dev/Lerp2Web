@@ -195,15 +195,23 @@ namespace Lerp2Web
             this.appPrefix = appPrefix;
 
             //Solicitar el appId
-            JObject obj = JGet(new ActionRequest("getAppId")
+            try
+            {
+                JObject obj = JGet(new ActionRequest("getAppId")
                 {
                     { "prefix", appPrefix }
                 });
 
-            this.appId = obj["data"].ToObject<int>();
+                this.appId = obj["data"].ToObject<int>();
 
-            //And load everything...
-            Load();
+                //And load everything...
+                Load();
+            }
+            catch (Exception ex)
+            {
+                OfflineMode = true;
+                Console.WriteLine("The was a error constructing the Lerp2Web class! Message:\n\n{0}", ex.ToString());
+            }
         }
 
         internal void Load()

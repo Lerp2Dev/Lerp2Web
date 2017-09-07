@@ -234,6 +234,15 @@ namespace Lerp2Web
                 return "";
             }
         }
+
+        public static ulong GetFileLength(string Url)
+        {
+            using (WebClient client = new WebClient())
+            {
+                client.OpenRead(Url);
+                return ulong.Parse(client.ResponseHeaders["Content-Length"]);
+            }
+        }
     }
 
     public static class IOExtensions
