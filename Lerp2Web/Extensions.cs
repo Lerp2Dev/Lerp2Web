@@ -131,6 +131,16 @@ namespace Lerp2Web
             foreach (T element in source)
                 action(element);
         }
+
+        public static Queue<T> SetFirstTo<T>(this Queue<T> q, int index)
+        {
+            Queue<T> queue = new Queue<T>();
+            queue.Enqueue(q.ElementAt(index));
+            for (int i = 0; i < q.Count; ++i)
+                if (i != index)
+                    q.Enqueue(q.ElementAt(i));
+            return queue;
+        }
     }
 
     public static class JsonUtil
@@ -284,6 +294,12 @@ namespace Lerp2Web
                     return "Inf";
                 return "0";
             }
+        }
+
+        public static string GetFileStr(this string name, int len = 12)
+        {
+            string withoutExt = Path.GetFileNameWithoutExtension(name);
+            return withoutExt.Length > len ? withoutExt.Substring(0, len) + "..." + name.Replace(withoutExt, "") : name;
         }
     }
 }
