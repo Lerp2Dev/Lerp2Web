@@ -132,6 +132,7 @@ namespace Lerp2Web
                 action(element);
         }
 
+<<<<<<< HEAD
         public static Queue<T> SetFirstTo<T>(this Queue<T> q, int index)
         {
             Queue<T> queue = new Queue<T>();
@@ -140,6 +141,13 @@ namespace Lerp2Web
                 if (i != index)
                     q.Enqueue(q.ElementAt(i));
             return queue;
+=======
+        public static Queue<T> SetFirstTo<T>(this Queue<T> q, T value)
+        {
+            T[] array = q.ToArray();
+            array[0] = value;
+            return new Queue<T>(array);
+>>>>>>> ee39440d51331fdef2ba5cf31e6a20b4f0aa601f
         }
     }
 
